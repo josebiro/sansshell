@@ -5,51 +5,40 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/google/subcommands"
 	"google.golang.org/grpc"
 
-	pb "github.com/snowflakedb/unshelled/services/localfile"
+	pb "github.com/snowflakedb/unshelled/services/healthcheck"
 )
 
 func init() {
-	subcommands.Register(&readCmd{}, "raw")
+	subcommands.Register(&healthCheckCmd{}, "raw")
 }
 
-type readCmd struct{}
+type healthCheckCmd struct{}
 
-func (*readCmd) Name() string     { return "read" }
-func (*readCmd) Synopsis() string { return "Print a file to stdout." }
-func (*readCmd) Usage() string {
-	return `read <path> [<path>...]:
-  Read from the remote file named by <path> and print it to stdout.
+func (*healthCheckCmd) Name() string { return "check" }
+func (*healthCheckCmd) Synopsis() string {
+	return "send (and print the result of) a simple health check"
+}
+func (*healthCheckCmd) Usage() string {
+	return `check:
 
-  Note: This is not optimized for large files.  If it doesn't fit in memory in
-  a single proto field, you'll have a bad time.
+  Send a health check to the remote unshelled server, and print the result.
 `
 }
 
-func (p *readCmd) SetFlags(f *flag.FlagSet) {}
+func (p *healthCheckCmd) SetFlags(f *flag.FlagSet) {}
 
-func (p *readCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
+func (p *healthCheckCmd) Execute(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 	conn := args[0].(*grpc.ClientConn)
-	if f.NArg() == 0 {
-		fmt.Fprintf(os.Stderr, "Please specify a filename to read.\n")
-		return subcommands.ExitUsageError
-	}
 
-	c := pb.NewLocalFileClient(conn)
+	c := pb.NewHealthCheckClient(conn)
 
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	for _, filename := range f.Args() {
-		resp, err := c.Read(ctx, &pb.ReadRequest{Filename: filename})
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not read file: %v\n", err)
-			return subcommands.ExitFailure
-		}
-		fmt.Println(string(resp.GetContents()))
+	if _, err := c.Ok(ctx, &pb.Empty{}); err != nil {
+		fmt.Fprintf(os.Stderr, "Healthcheck failure: %v\n", err)
 	}
+	fmt.Println("ok")
 	return subcommands.ExitSuccess
 }
