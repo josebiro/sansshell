@@ -1,0 +1,3 @@
+2022/05/26 11:47:14 INFO: [transport] transport: loopyWriter.run returning. connection error: desc = "transport is closing"
+2022/05/26 11:47:14 WARNING: [core] grpc: Server.Serve failed to create ServerTransport:  connection error: desc = "ServerHandshake(\"127.0.0.1:56603\") failed: tls: client didn't provide a certificate"
+2022/05/26 11:47:14 WARNING: [core] grpc: Server.Serve failed to create ServerTransport:  connection error: desc = "ServerHandshake(\"127.0.0.1:56604\") failed: remote error: tls: bad certificate"

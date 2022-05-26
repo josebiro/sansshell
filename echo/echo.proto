@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "github.com/Snowflake-Labs/sansshell/badtls/echo";
+
+package Echo;
+
+message EchoRequest { string input = 1; }
+
+message EchoResponse { string output = 2; }
+
+service EchoService {
+  rpc Echo(EchoRequest) returns (EchoResponse) {}
+}
