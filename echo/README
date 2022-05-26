@@ -1,0 +1,14 @@
+To generate the testdata:
+
+go install github.com/meterup/generate-cert@latest
+generate-cert  --host=localhost,127.0.0.1,::1
+mkdir -p testdata client/testdata server/testdata
+mv root.pem testdata/root.pem
+mv client.* client/testdata
+mv leaf.pem server/testdata/server.pem
+mv leaf.key server/testdata/server.key
+generate-cert --organization=Acme2  --host=localhost,127.0.0.1,::1
+mv client.key client/testdata/bad.key
+mv client.pem client/testdata/bad.pem
+rm leaf.*
+mv root.pem client/testdata/bad-root.pem
