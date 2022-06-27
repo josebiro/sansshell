@@ -35,6 +35,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	proxypb "github.com/Snowflake-Labs/sansshell/proxy"
+	"github.com/go-logr/logr"
 )
 
 // Conn is a grpc.ClientConnInterface which is connected to the proxy
@@ -371,8 +372,11 @@ func (p *Conn) createStreams(ctx context.Context, method string) (proxypb.Proxy_
 		if err != nil && err != io.EOF {
 			return nil, nil, errors, status.Errorf(codes.Internal, "can't send request for %s on stream - %v", method, err)
 		}
+		log := logr.FromContextOrDiscard(ctx)
+		log.Error(err, "send error")
 		if err != nil {
-			_, err := stream.Recv()
+			resp, err := stream.Recv()
+			log.Info("recv data", "data", resp)
 			return nil, nil, errors, status.Errorf(codes.Internal, "remote error from Send for %s - %v", method, err)
 		}
 	}
