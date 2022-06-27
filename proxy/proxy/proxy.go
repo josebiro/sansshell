@@ -373,7 +373,7 @@ func (p *Conn) createStreams(ctx context.Context, method string) (proxypb.Proxy_
 			return nil, nil, errors, status.Errorf(codes.Internal, "can't send request for %s on stream - %v", method, err)
 		}
 		log := logr.FromContextOrDiscard(ctx)
-		log.Error(err, "send error")
+		log.Error(err, "send error", "ip", t)
 		if err != nil {
 			resp, err := stream.Recv()
 			log.Info("recv data", "data", resp)
