@@ -24,6 +24,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"google.golang.org/grpc"
@@ -348,6 +349,10 @@ func (p *Conn) createStreams(ctx context.Context, method string) (proxypb.Proxy_
 
 	streamIds := make(map[uint64]*Ret)
 
+	wg := &sync.WaitGroup{}
+
+	wg.Add(1)
+
 	// For every target we have to send a separate StartStream (with a nonce which in our case is the target index so clients can map too).
 	// We then validate the nonce matches and record the stream ID so later processing can match responses to the right targets.
 	// This needs to be 2 loops as we want the server to process N StartStreams in parallel and then we'll loop getting responses.
@@ -375,8 +380,13 @@ func (p *Conn) createStreams(ctx context.Context, method string) (proxypb.Proxy_
 		log := logr.FromContextOrDiscard(ctx)
 		log.Error(err, "send error", "ip", t)
 		if err != nil {
-			resp, err := stream.Recv()
-			log.Info("recv data", "data", resp)
+			for {
+				resp, err := stream.Recv()
+				log.Info("recv data", "data", resp, "err", err)
+				if err != nil {
+					break
+				}
+			}
 			return nil, nil, errors, status.Errorf(codes.Internal, "remote error from Send for %s - %v", method, err)
 		}
 	}
