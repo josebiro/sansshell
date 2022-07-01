@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"net"
 
+	"github.com/go-logr/logr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -126,6 +127,8 @@ func NewRPCAuthInput(ctx context.Context, method string, req proto.Message) (*RP
 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		out.Metadata = md
+		logger := logr.FromContextOrDiscard(ctx)
+		logger.Info("metadata", "md", md)
 	}
 
 	if req != nil {
