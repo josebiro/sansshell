@@ -267,7 +267,7 @@ func (s *TargetStream) Run(nonce uint32, replyChan chan *pb.ProxyReply) {
 				}
 			}
 
-			authinput, err := rpcauth.NewRPCAuthInput(ctx, s.Method(), req)
+			authinput, err := rpcauth.NewRPCAuthInput(grpcStream.Context(), s.Method(), req)
 			if err != nil {
 				err = status.Errorf(codes.Internal, "error creating authz input %v", err)
 				s.CloseWith(err)
